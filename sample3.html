@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EasyAccess</title>
+    <style>
+        /* General Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        #home, #editor {
+            padding: 20px;
+            display: none;
+        }
+        #home {
+            display: block; /* Default visible page */
+        }
+        header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        #images img {
+            max-width: 150px;
+            margin: 10px 10px 0 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Home Page -->
+    <div id="home">
+        <h1>Welcome to EasyAccess</h1>
+        <p>Share text and images easily without registration or login.</p>
+        <form id="fileForm">
+            <label for="fileName">File Name:</label>
+            <input type="text" id="fileName" required>
+            <label for="password">Password:</label>
+            <input type="password" id="password" required>
+            <button type="submit">Proceed</button>
+        </form>
+    </div>
+
+    <!-- Editor Page -->
+    <div id="editor">
+        <header>
+            <button id="reload">Reload</button>
+            <button id="save">Save</button>
+            <button id="changePassword">Change Password</button>
+            <button id="delete">Delete</button>
+        </header>
+        <textarea id="textEditor" placeholder="Write your content here..."></textarea>
+        <div>
+            <label for="uploadImage">Upload Image:</label>
+            <input type="file" id="uploadImage" accept="image/*">
+            <div id="images"></div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript for EasyAccess
+        document.addEventListener("DOMContentLoaded", () => {
+            const fileForm = document.getElementById("fileForm");
+            const editor = document.getElementById("editor");
+            const home = document.getElementById("home");
+            const textEditor = document.getElementById("textEditor");
+            const uploadImage = document.getElementById("uploadImage");
+            const imagesContainer = document.getElementById("images");
+
+            let fileName, password;
+
+            // Handle form submission
+            fileForm.addEventListener("submit", (e) => {
+                e.preventDefault(); // Prevent page reload
+
+                // Get inputs
+                fileName = document.getElementById("fileName").value.trim();
+                password = document.getElementById("password").value.trim();
+
+                if (!fileName || !password) {
+                    alert("Both file name and password are required!");
+                    return;
+                }
+
+                // Store in sessionStorage (or localStorage)
+                sessionStorage.setItem("fileName", fileName);
+                sessionStorage.setItem("password", password);
+
+                // Show editor page
+                home.style.display = "none";
+                editor.style.display = "block";
+            });
+
+            // Save content to sessionStorage
+            document.getElementById("save").addEventListener("click", () => {
+                const content = textEditor.value.trim();
+                if (!content) {
+                    alert("Text editor is empty!");
+                    return;
+                }
+                sessionStorage.setItem(fileName + "_content", content);
+                alert("Content saved successfully!");
+            });
+
+            // Reload content
+            document.getElementById("reload").addEventListener("click", () => {
+                const savedContent = sessionStorage.getItem(fileName + "_content");
+                if (savedContent) {
+                    textEditor.value = savedContent;
+                    alert("Content loaded!");
+                } else {
+                    alert("No saved content found.");
+                }
+            });
+
+            // Change password
+            document.getElementById("changePassword").addEventListener("click", () => {
+                const newPassword = prompt("Enter a new password:");
+                if (newPassword) {
+                    sessionStorage.setItem("password", newPassword);
+                    alert("Password changed successfully!");
+                }
+            });
+
+            // Delete content
+            document.getElementById("delete").addEventListener("click", () => {
+                if (confirm("Are you sure you want to delete this content?")) {
+                    sessionStorage.removeItem(fileName + "_content");
+                    textEditor.value = "";
+                    alert("Content deleted!");
+                }
+            });
+
+            // Upload and display images
+            uploadImage.addEventListener("change", (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const img = document.createElement("img");
+                        img.src = reader.result;
+                        imagesContainer.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
